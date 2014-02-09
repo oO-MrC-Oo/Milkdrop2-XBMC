@@ -1,0 +1,107 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="My Plugin Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="My Plugin Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Framework Files">
+      <UniqueIdentifier>{b143607a-2db8-44be-9a84-a0fd83b4503a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ns-eel">
+      <UniqueIdentifier>{f38e4b94-3898-431f-bf43-4b2e2f9bffa3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="vis_milk2\plugin.h">
+      <Filter>My Plugin Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vis_milk2\shell_defines.h">
+      <Filter>My Plugin Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vis_milk2\dxcontext.h">
+      <Filter>Framework Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vis_milk2\fft.h">
+      <Filter>Framework Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vis_milk2\pluginshell.h">
+      <Filter>Framework Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vis_milk2\defines.h">
+      <Filter>My Plugin Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vis_milk2\utility.h">
+      <Filter>Framework Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vis_milk2\md_defines.h">
+      <Filter>My Plugin Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vis_milk2\texmgr.h">
+      <Filter>My Plugin Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vis_milk2\support.h">
+      <Filter>My Plugin Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vis_milk2\state.h">
+      <Filter>My Plugin Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vis_milk2\gstring.h">
+      <Filter>Framework Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="vis_milk2\plugin.cpp">
+      <Filter>My Plugin Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="vis_milk2\dxcontext.cpp">
+      <Filter>Framework Files</Filter>
+    </ClCompile>
+    <ClCompile Include="vis_milk2\fft.cpp">
+      <Filter>Framework Files</Filter>
+    </ClCompile>
+    <ClCompile Include="vis_milk2\pluginshell.cpp">
+      <Filter>Framework Files</Filter>
+    </ClCompile>
+    <ClCompile Include="vis_milk2\utility.cpp">
+      <Filter>Framework Files</Filter>
+    </ClCompile>
+    <ClCompile Include="vis_milk2\texmgr.cpp">
+      <Filter>My Plugin Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="vis_milk2\support.cpp">
+      <Filter>My Plugin Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ns-eel2\nseel-caltab.c">
+      <Filter>ns-eel</Filter>
+    </ClCompile>
+    <ClCompile Include="ns-eel2\nseel-cfunc.c">
+      <Filter>ns-eel</Filter>
+    </ClCompile>
+    <ClCompile Include="ns-eel2\nseel-compiler.c">
+      <Filter>ns-eel</Filter>
+    </ClCompile>
+    <ClCompile Include="ns-eel2\nseel-eval.c">
+      <Filter>ns-eel</Filter>
+    </ClCompile>
+    <ClCompile Include="ns-eel2\nseel-lextab.c">
+      <Filter>ns-eel</Filter>
+    </ClCompile>
+    <ClCompile Include="ns-eel2\nseel-ram.c">
+      <Filter>ns-eel</Filter>
+    </ClCompile>
+    <ClCompile Include="ns-eel2\nseel-yylex.c">
+      <Filter>ns-eel</Filter>
+    </ClCompile>
+    <ClCompile Include="vis_milk2\state.cpp">
+      <Filter>My Plugin Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="vis_milk2\milkdropfs.cpp">
+      <Filter>My Plugin Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

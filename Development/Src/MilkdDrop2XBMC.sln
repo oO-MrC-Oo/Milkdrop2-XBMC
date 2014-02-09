@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vis_milk2", "vis_milk2\vis_milk2.vcxproj", "{72D20402-C5F5-4656-8749-F382425D29F4}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Milkdrop2XBMC", "Milkdrop2XBMC\Milkdrop2XBMC.vcxproj", "{EB1DEE73-2639-4E24-9DDB-22B434133374}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Mildrop2StandAlone", "Milkdrop2StandAlone\Milkdrop2StandAlone.vcxproj", "{95880650-A399-486F-BF8C-E33F5E29B885}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{72D20402-C5F5-4656-8749-F382425D29F4}.Debug|Win32.ActiveCfg = Debug|Win32
+		{72D20402-C5F5-4656-8749-F382425D29F4}.Debug|Win32.Build.0 = Debug|Win32
+		{72D20402-C5F5-4656-8749-F382425D29F4}.Release|Win32.ActiveCfg = Release|Win32
+		{72D20402-C5F5-4656-8749-F382425D29F4}.Release|Win32.Build.0 = Release|Win32
+		{EB1DEE73-2639-4E24-9DDB-22B434133374}.Debug|Win32.ActiveCfg = Debug|Win32
+		{EB1DEE73-2639-4E24-9DDB-22B434133374}.Debug|Win32.Build.0 = Debug|Win32
+		{EB1DEE73-2639-4E24-9DDB-22B434133374}.Release|Win32.ActiveCfg = Release|Win32
+		{EB1DEE73-2639-4E24-9DDB-22B434133374}.Release|Win32.Build.0 = Release|Win32
+		{95880650-A399-486F-BF8C-E33F5E29B885}.Debug|Win32.ActiveCfg = Debug|Win32
+		{95880650-A399-486F-BF8C-E33F5E29B885}.Debug|Win32.Build.0 = Debug|Win32
+		{95880650-A399-486F-BF8C-E33F5E29B885}.Release|Win32.ActiveCfg = Release|Win32
+		{95880650-A399-486F-BF8C-E33F5E29B885}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
