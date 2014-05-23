@@ -3,8 +3,10 @@
 #include <vector>
 #include "../../vis_milk2/vis_milk2/plugin.h"
 
-#include "xbmc_vis_dll.h"
-#include "xbmc_addon_cpp_dll.h"
+
+#define TARGET_WINDOWS
+#include "addons/include/xbmc_vis_dll.h"
+//#include "xbmc_addon_cpp_dll.h"
 
 
 CPlugin g_plugin;
@@ -268,4 +270,11 @@ extern "C" ADDON_STATUS ADDON_SetSetting(const char* id, const void* value)
 extern "C"   unsigned int GetSubModules(char ***presets)
 {
   return 0; // this vis supports 0 sub modules
+}
+
+//-- Announce -----------------------------------------------------------------
+// Receive announcements from XBMC
+//-----------------------------------------------------------------------------
+extern "C" void ADDON_Announce(const char *flag, const char *sender, const char *message, const void *data)
+{
 }

@@ -48,7 +48,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Include;E:\Projects\Personal\xbmc-12.2\xbmc\addons\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Include;..\..\..\..\xbmc\xbmc\;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)\..\..\Binaries\</OutDir>
     <IntDir>$(SolutionDir)\..\Intermediates\$(Configuration)\</IntDir>
     <TargetName>Milkdrop2_win32dx</TargetName>
@@ -70,7 +70,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;VORTEX_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;MILKDROP2_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -78,7 +78,7 @@
       <AdditionalDependencies>d3dx9d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(TargetPath)" "E:\Projects\Personal\xbmc-12.2\addons\visualization.milkdrop2\$(TargetFileName)"</Command>
+      <Command>copy "$(TargetPath)" "E:\Projects\Personal\GitHub\xbmc\addons\visualization.milkdrop2\$(TargetFileName)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
