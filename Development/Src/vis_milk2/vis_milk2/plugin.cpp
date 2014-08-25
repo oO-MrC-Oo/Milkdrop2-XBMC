@@ -701,7 +701,6 @@ bool ReadFileToString(const wchar_t* szBaseFilename, char* szDestText, int nMaxB
     
     // read in all chars.  Replace char combos:  { 13;  13+10;  10 } with LINEFEED_CONTROL_CHAR, if bConvertLFsToSpecialChar is true.
 //    FILE* f = _wfopen(szFile, L"rb");
-//  FILE* f = fopen(utf8Name, "rb");
 	FILE* f = XBMC_WOpen( szFile, L"rb");
     if (!f)
     {
@@ -811,14 +810,7 @@ void CPlugin::MyPreInitialize()
     // seed the system's random number generator w/the current system time:
     //srand((unsigned)time(NULL));  -don't - let winamp do it
 
-	// attempt to load a unicode F1 help message otherwise revert to the ansi version
-/*
-	g_szHelp = (wchar_t*)GetTextResource(IDR_TEXT2,1);
-	if(!g_szHelp) g_szHelp = (wchar_t*)GetTextResource(IDR_TEXT1,0);
-	else g_szHelp_W = 1;*/
-
     // CONFIG PANEL SETTINGS THAT WE'VE ADDED (TAB #2)
-	m_bFirstRun		            = true;
     m_bInitialPresetSelected    = false;
 	m_fBlendTimeUser			= 1.7f;
 	m_fBlendTimeAuto			= 2.7f;
@@ -839,13 +831,10 @@ void CPlugin::MyPreInitialize()
 	m_nGridY			= 36;//24;
 
 	m_bShowPressF1ForHelp = true;
-	//lstrcpy(m_szMonitorName, "[don't use multimon]");
-	m_bShowMenuToolTips = true;	// NOTE: THIS IS CURRENTLY HARDWIRED TO TRUE - NO OPTION TO CHANGE
 	m_n16BitGamma	= 2;
 	m_bAutoGamma    = true;
 	//m_nFpsLimit			= -1;
 	m_bEnableRating			= true;
-    //m_bInstaScan            = false;
 	m_bSongTitleAnims		= true;
 	m_fSongTitleAnimDuration = 1.7f;
 	m_fTimeBetweenRandomSongTitles = -1.0f;
@@ -917,22 +906,9 @@ void CPlugin::MyPreInitialize()
 	m_UI_mode			= UI_REGULAR;
     m_bShowShaderHelp = false;
 
-    m_nMashSlot = 0;    //0..MASH_SLOTS-1
-    for (int mash=0; mash<MASH_SLOTS; mash++)
-        m_nLastMashChangeFrame[mash] = 0;
-
-    //m_nTrackPlaying	= 0;
-	//m_nSongPosMS      = 0;
-	//m_nSongLenMS      = 0;
-    m_bUserPagedUp      = false;
-    m_bUserPagedDown    = false;
 	m_fMotionVectorsTempDx = 0.0f;
 	m_fMotionVectorsTempDy = 0.0f;
 	
-    m_waitstring.bActive		= false;
-	m_waitstring.bOvertypeMode  = false;
-	m_waitstring.szClipboard[0] = 0;
-
 	m_nPresets		= 0;
 	m_nDirs			= 0;
     m_nPresetListCurPos = 0;
@@ -984,7 +960,6 @@ void CPlugin::MyPreInitialize()
 	m_indices_list			= NULL;
 	m_indices_strip			= NULL;
 
-	m_bMMX			        = false;
     m_bHasFocus             = true;
     m_bHadFocus             = false;
     m_bOrigScrollLockState  = GetKeyState(VK_SCROLL) & 1;
@@ -1039,9 +1014,7 @@ void CPlugin::MyReadConfig()
 	int n=0;
     wchar_t *pIni = GetConfigIniFile();
 
-	m_bFirstRun		= !GetPrivateProfileBoolW(L"settings",L"bConfigured" ,false,pIni);
 	m_bEnableRating = GetPrivateProfileBoolW(L"settings",L"bEnableRating",m_bEnableRating,pIni);
-    //m_bInstaScan    = GetPrivateProfileBool("settings","bInstaScan",m_bInstaScan,pIni);
 	m_bHardCutsDisabled = GetPrivateProfileBoolW(L"settings",L"bHardCutsDisabled",m_bHardCutsDisabled,pIni);
 	g_bDebugOutput	= GetPrivateProfileBoolW(L"settings",L"bDebugOutput",g_bDebugOutput,pIni);
 	//m_bShowSongInfo = GetPrivateProfileBool("settings","bShowSongInfo",m_bShowSongInfo,pIni);
@@ -1148,7 +1121,6 @@ void CPlugin::MyWriteConfig()
 	WritePrivateProfileIntW(m_bSongTitleAnims,		L"bSongTitleAnims",		pIni, L"settings");
 	WritePrivateProfileIntW(m_bHardCutsDisabled,	    L"bHardCutsDisabled",	pIni, L"settings");
 	WritePrivateProfileIntW(m_bEnableRating,		    L"bEnableRating",		pIni, L"settings");
-	//WritePrivateProfileIntW(m_bInstaScan,            "bInstaScan",		    pIni, "settings");
 	WritePrivateProfileIntW(g_bDebugOutput,		    L"bDebugOutput",			pIni, L"settings");
 
 	//itePrivateProfileInt(m_bShowPresetInfo, 	    "bShowPresetInfo",		pIni, "settings");
@@ -1191,27 +1163,6 @@ void CPlugin::MyWriteConfig()
 }
 
 //----------------------------------------------------------------------
-
-void ConvertLLCto1310(char* d, const char *s)
-{
-    // src and dest can NOT be the same pointer.
-    assert(s != d);
-    
-    while (*s)
-    {
-        if (*s == LINEFEED_CONTROL_CHAR)
-        {
-            *d++ = 13;
-            *d++ = 10;
-        }
-        else
-        {
-            *d++ = *s;
-        }
-        s++;
-    };
-    *d = 0;
-}
 
 void StripComments(char* str)
 {
@@ -1304,11 +1255,6 @@ int CPlugin::AllocateMyNonDx9Stuff()
     bSuccess |= ReadFileToString(L"data\\blur2_ps.fx", m_szBlurPSY, sizeof(m_szBlurPSY), true);
     if (!bSuccess) return false;
 
-	//BuildMenus();
-
-	m_bMMX = CheckForMMX();
-	//m_bSSE = CheckForSSE();
-
 	m_pState->Default();
 	m_pOldState->Default();
     m_pNewState->Default();
@@ -1354,20 +1300,6 @@ void CPlugin::CleanUpMyNonDx9Stuff()
     DeleteCriticalSection(&g_cs);
 
     CancelThread(0);
-
-/*
-	m_menuPreset  .Finish();
-	m_menuWave    .Finish();
-	m_menuAugment .Finish();
-    m_menuCustomWave.Finish();
-    m_menuCustomShape.Finish();
-	m_menuMotion  .Finish();
-	m_menuPost    .Finish();
-    for (int i=0; i<MAX_CUSTOM_WAVES; i++)
-	    m_menuWavecode[i].Finish();
-    for (i=0; i<MAX_CUSTOM_SHAPES; i++)
-	    m_menuShapecode[i].Finish();
-*/
 
     SetScrollLock(m_bOrigScrollLockState, m_bPreventScollLockHandling);
 
@@ -3828,16 +3760,7 @@ void CPlugin::MyRenderFn(int redraw)
         }
     }
 	*/
-  /*  if (!redraw)
-    {
-        GetWinampSongTitle(GetWinampWindow(), m_szSongTitle, sizeof(m_szSongTitle)-1);
-        if (wcscmp(m_szSongTitle, m_szSongTitlePrev))
-        {
-            lstrcpynW(m_szSongTitlePrev, m_szSongTitle, 512);
-            if (m_bSongTitleAnims)
-                LaunchSongTitleAnim();
-        }
-    }*/
+  
 
     // 2. Clear the background:
     //DWORD clear_color = (m_fog_enabled) ? FOG_COLOR : 0xFF000000;
@@ -3857,34 +3780,6 @@ void CPlugin::MyRenderFn(int redraw)
 
     RenderFrame(redraw);  // see milkdropfs.cpp
 
-    /*
-    for (int i=0; i<10; i++)
-    {
-        RECT r;
-        r.top = GetHeight()*i/10;
-        r.left = 0;
-        r.right = GetWidth();
-        r.bottom = r.top + GetFontHeight(DECORATIVE_FONT);
-        char buf[256];
-        switch(i)
-        {
-        case 0: lstrcpy(buf, "this is a test"); break;
-        case 1: lstrcpy(buf, "argh"); break;
-        case 2: lstrcpy(buf, "!!"); break;
-        case 3: lstrcpy(buf, "TESTING FONTS"); break;
-        case 4: lstrcpy(buf, "rancid bear grease"); break;
-        case 5: lstrcpy(buf, "whoppers and ding dongs"); break;
-        case 6: lstrcpy(buf, "billy & joey"); break;
-        case 7: lstrcpy(buf, "."); break;
-        case 8: lstrcpy(buf, "---"); break;
-        case 9: lstrcpy(buf, "test"); break;
-        }
-        int t = (int)( 54 + 18*sin(i/10.0f*53.7f + 1) - 28*sin(i/10.0f*39.4f + 3) );
-        if (((GetFrame() + i*107) % t) < t*8/9)
-            m_text.QueueText(GetFont(DECORATIVE_FONT), buf, r, 0, 0xFFFF00FF);
-    }
-    /**/
-
     if (!redraw)
     {
         m_nFramesSinceResize++;
@@ -3902,379 +3797,6 @@ void CPlugin::MyRenderFn(int redraw)
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 
-/*
-void CPlugin::DrawTooltip(wchar_t* str, int xR, int yB)
-{
-    // draws a string in the lower-right corner of the screen.
-    // note: ID3DXFont handles DT_RIGHT and DT_BOTTOM *very poorly*.
-    //       it is best to calculate the size of the text first, 
-    //       then place it in the right spot.
-    // note: use DT_WORDBREAK instead of DT_WORD_ELLIPSES, otherwise certain fonts'
-    //       calcrect (for the dark box) will be wrong.
-
-    RECT r, r2;
-    SetRect(&r, 0, 0, xR-TEXT_MARGIN*2, 2048);
-	m_text.DrawTextW(GetFont(TOOLTIP_FONT), str, -1, &r, DT_CALCRECT, 0xFFFFFFFF, false);
-    r2.bottom = yB - TEXT_MARGIN;
-    r2.right  = xR - TEXT_MARGIN;
-    r2.left   = r2.right - (r.right-r.left);
-    r2.top    = r2.bottom - (r.bottom-r.top);
-	RECT r3 = r2; r3.left -= 4; r3.top -= 2; r3.right += 2; r3.bottom += 2;
-	DrawDarkTranslucentBox(&r3);
-    m_text.DrawTextW(GetFont(TOOLTIP_FONT), str, -1, &r2, 0, 0xFFFFFFFF, false);
-}*/
-
-/*
-#define MTO_UPPER_RIGHT 0
-#define MTO_UPPER_LEFT  1
-#define MTO_LOWER_RIGHT 2
-#define MTO_LOWER_LEFT  3
-
-#define SelectFont(n) { \
-    pFont = GetFont(n); \
-    h = GetFontHeight(n); \
-}
-
-#define MyTextOut_BGCOLOR(str, corner, bDarkBox, boxColor) { \
-    SetRect(&r, 0, 0, xR-xL, 2048); \
-	m_text.DrawTextW(pFont, str, -1, &r, DT_NOPREFIX | ((corner == MTO_UPPER_RIGHT)?0:DT_SINGLELINE) | DT_WORD_ELLIPSIS | DT_CALCRECT | ((corner == MTO_UPPER_RIGHT) ? DT_RIGHT : 0), 0xFFFFFFFF, false, boxColor); \
-    int w = r.right - r.left; \
-    if      (corner == MTO_UPPER_LEFT ) SetRect(&r, xL, *upper_left_corner_y, xL+w, *upper_left_corner_y + h); \
-    else if (corner == MTO_UPPER_RIGHT) SetRect(&r, xR-w, *upper_right_corner_y, xR, *upper_right_corner_y + h); \
-    else if (corner == MTO_LOWER_LEFT ) SetRect(&r, xL, *lower_left_corner_y - h, xL+w, *lower_left_corner_y); \
-    else if (corner == MTO_LOWER_RIGHT) SetRect(&r, xR-w, *lower_right_corner_y - h, xR, *lower_right_corner_y); \
-	m_text.DrawTextW(pFont, str, -1, &r, DT_NOPREFIX | ((corner == MTO_UPPER_RIGHT)?0:DT_SINGLELINE) | DT_WORD_ELLIPSIS | ((corner == MTO_UPPER_RIGHT) ? DT_RIGHT: 0), 0xFFFFFFFF, bDarkBox, boxColor); \
-    if      (corner == MTO_UPPER_LEFT ) *upper_left_corner_y  += h; \
-    else if (corner == MTO_UPPER_RIGHT) *upper_right_corner_y += h; \
-    else if (corner == MTO_LOWER_LEFT ) *lower_left_corner_y  -= h; \
-    else if (corner == MTO_LOWER_RIGHT) *lower_right_corner_y -= h; \
-}
-
-#define MyTextOut(str, corner, bDarkBox) MyTextOut_BGCOLOR(str, corner, bDarkBox, 0xFF000000)
-
-#define MyTextOut_Shadow(str, corner) { \
-    / * calc rect size * /        \
-    SetRect(&r, 0, 0, xR-xL, 2048); \
-	m_text.DrawTextW(pFont, (wchar_t*)str, -1, &r, DT_NOPREFIX | DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_CALCRECT, 0xFFFFFFFF, false, 0xFF000000); \
-    int w = r.right - r.left; \
-    / * first the shadow * /         \
-    if      (corner == MTO_UPPER_LEFT ) SetRect(&r, xL, *upper_left_corner_y, xL+w, *upper_left_corner_y + h); \
-    else if (corner == MTO_UPPER_RIGHT) SetRect(&r, xR-w, *upper_right_corner_y, xR, *upper_right_corner_y + h); \
-    else if (corner == MTO_LOWER_LEFT ) SetRect(&r, xL, *lower_left_corner_y - h, xL+w, *lower_left_corner_y); \
-    else if (corner == MTO_LOWER_RIGHT) SetRect(&r, xR-w, *lower_right_corner_y - h, xR, *lower_right_corner_y); \
-    r.top += 1; r.left += 1;      \
-    m_text.DrawTextW(pFont, (wchar_t*)str, -1, &r, DT_NOPREFIX | DT_SINGLELINE | DT_WORD_ELLIPSIS, 0xFF000000, false, 0xFF000000); \
-    / * now draw real text * /            \
-    r.top -= 1; r.left -= 1;       \
-	m_text.DrawTextW(pFont, (wchar_t*)str, -1, &r, DT_NOPREFIX | DT_SINGLELINE | DT_WORD_ELLIPSIS, 0xFFFFFFFF, false, 0xFF000000); \
-    if      (corner == MTO_UPPER_LEFT ) *upper_left_corner_y  += h; \
-    else if (corner == MTO_UPPER_RIGHT) *upper_right_corner_y += h; \
-    else if (corner == MTO_LOWER_LEFT ) *lower_left_corner_y  -= h; \
-    else if (corner == MTO_LOWER_RIGHT) *lower_right_corner_y -= h; \
-}
-
-void CPlugin::OnAltK()
-{
-    AddError(WASABI_API_LNGSTRINGW(IDS_PLEASE_EXIT_VIS_BEFORE_RUNNING_CONFIG_PANEL), 3.0f, ERR_NOTIFY, true);
-}
-
-void CPlugin::AddError(wchar_t* szMsg, float fDuration, int category, bool bBold)
-{
-    if (category == ERR_NOTIFY)
-        ClearErrors(category);
-
-    assert(category != ERR_ALL);
-    ErrorMsg x;
-    x.msg = szMsg;
-    x.birthTime = GetTime();
-    x.expireTime = GetTime() + fDuration;
-    x.category = category;
-    x.bBold = bBold;
-    m_errors.push_back(x);
-}
-
-void CPlugin::ClearErrors(int category)  // 0=all categories
-{
-    int N = m_errors.size();
-    for (int i=0; i<N; i++)
-    if (category==ERR_ALL || m_errors[i].category == category)
-    {
-        m_errors.eraseAt(i);
-        i--;
-        N--;
-    }
-}
-
-//----------------------------------------------------------------------
-
-void CPlugin::Randomize()
-{
-	srand((int)(GetTime()*100));
-	//m_fAnimTime		= (warand() % 51234L)*0.01f;
-	m_fRandStart[0]		= (warand() % 64841L)*0.01f;
-	m_fRandStart[1]		= (warand() % 53751L)*0.01f;
-	m_fRandStart[2]		= (warand() % 42661L)*0.01f;
-	m_fRandStart[3]		= (warand() % 31571L)*0.01f;
-
-	//CState temp;
-	//temp.Randomize(warand() % NUM_MODES);
-	//m_pState->StartBlend(&temp, m_fAnimTime, m_fBlendTimeUser);
-}
-
-//----------------------------------------------------------------------
-
-/*
-void CPlugin::SetMenusForPresetVersion(int WarpPSVersion, int CompPSVersion)
-{
-    int MaxPSVersion = max(WarpPSVersion, CompPSVersion);
-
-    m_menuPreset.EnableItem(WASABI_API_LNGSTRINGW(IDS_MENU_EDIT_WARP_SHADER), WarpPSVersion > 0);
-	m_menuPreset.EnableItem(WASABI_API_LNGSTRINGW(IDS_MENU_EDIT_COMPOSITE_SHADER), CompPSVersion > 0);
-	m_menuPost.EnableItem(WASABI_API_LNGSTRINGW(IDS_MENU_SUSTAIN_LEVEL), WarpPSVersion==0);
-	m_menuPost.EnableItem(WASABI_API_LNGSTRINGW(IDS_MENU_TEXTURE_WRAP), WarpPSVersion==0);
-	m_menuPost.EnableItem(WASABI_API_LNGSTRINGW(IDS_MENU_GAMMA_ADJUSTMENT), CompPSVersion==0);
-	m_menuPost.EnableItem(WASABI_API_LNGSTRINGW(IDS_MENU_HUE_SHADER), CompPSVersion==0);
-	m_menuPost.EnableItem(WASABI_API_LNGSTRINGW(IDS_MENU_VIDEO_ECHO_ALPHA), CompPSVersion==0);
-	m_menuPost.EnableItem(WASABI_API_LNGSTRINGW(IDS_MENU_VIDEO_ECHO_ZOOM), CompPSVersion==0);
-	m_menuPost.EnableItem(WASABI_API_LNGSTRINGW(IDS_MENU_VIDEO_ECHO_ORIENTATION), CompPSVersion==0);
-	m_menuPost.EnableItem(WASABI_API_LNGSTRINGW(IDS_MENU_FILTER_INVERT), CompPSVersion==0);
-	m_menuPost.EnableItem(WASABI_API_LNGSTRINGW(IDS_MENU_FILTER_BRIGHTEN), CompPSVersion==0);
-	m_menuPost.EnableItem(WASABI_API_LNGSTRINGW(IDS_MENU_FILTER_DARKEN), CompPSVersion==0);
-	m_menuPost.EnableItem(WASABI_API_LNGSTRINGW(IDS_MENU_FILTER_SOLARIZE), CompPSVersion==0);
-	m_menuPost.EnableItem(WASABI_API_LNGSTRINGW(IDS_MENU_BLUR1_EDGE_DARKEN_AMOUNT), MaxPSVersion > 0);
-	m_menuPost.EnableItem(WASABI_API_LNGSTRINGW(IDS_MENU_BLUR1_MIN_COLOR_VALUE), MaxPSVersion > 0);
-	m_menuPost.EnableItem(WASABI_API_LNGSTRINGW(IDS_MENU_BLUR1_MAX_COLOR_VALUE), MaxPSVersion > 0);
-	m_menuPost.EnableItem(WASABI_API_LNGSTRINGW(IDS_MENU_BLUR2_MIN_COLOR_VALUE), MaxPSVersion > 0);
-	m_menuPost.EnableItem(WASABI_API_LNGSTRINGW(IDS_MENU_BLUR2_MAX_COLOR_VALUE), MaxPSVersion > 0);
-	m_menuPost.EnableItem(WASABI_API_LNGSTRINGW(IDS_MENU_BLUR3_MIN_COLOR_VALUE), MaxPSVersion > 0);
-	m_menuPost.EnableItem(WASABI_API_LNGSTRINGW(IDS_MENU_BLUR3_MAX_COLOR_VALUE), MaxPSVersion > 0);
-}*/
-
-/*
-void CPlugin::BuildMenus()
-{
-    wchar_t buf[1024];
-
-	m_pCurMenu = &m_menuPreset;//&m_menuMain;
-	
-	m_menuPreset     .Init(WASABI_API_LNGSTRINGW(IDS_EDIT_CURRENT_PRESET));
-	m_menuMotion     .Init(WASABI_API_LNGSTRINGW(IDS_MOTION));
-    m_menuCustomShape.Init(WASABI_API_LNGSTRINGW(IDS_DRAWING_CUSTOM_SHAPES));
-    m_menuCustomWave .Init(WASABI_API_LNGSTRINGW(IDS_DRAWING_CUSTOM_WAVES));
-	m_menuWave       .Init(WASABI_API_LNGSTRINGW(IDS_DRAWING_SIMPLE_WAVEFORM));
-	m_menuAugment    .Init(WASABI_API_LNGSTRINGW(IDS_DRAWING_BORDERS_MOTION_VECTORS));
-	m_menuPost       .Init(WASABI_API_LNGSTRINGW(IDS_POST_PROCESSING_MISC));
-    for (int i=0; i<MAX_CUSTOM_WAVES; i++)
-    {
-        swprintf(buf, WASABI_API_LNGSTRINGW(IDS_CUSTOM_WAVE_X), i+1);
-	    m_menuWavecode[i].Init(buf);
-    }
-    for (i=0; i<MAX_CUSTOM_SHAPES; i++)
-    {
-        swprintf(buf, WASABI_API_LNGSTRINGW(IDS_CUSTOM_SHAPE_X), i+1);
-	    m_menuShapecode[i].Init(buf);
-    }
-	
-    //-------------------------------------------
-
-    // MAIN MENU / menu hierarchy
-
-    m_menuPreset.AddChildMenu(&m_menuMotion);
-    m_menuPreset.AddChildMenu(&m_menuCustomShape);
-    m_menuPreset.AddChildMenu(&m_menuCustomWave);
-    m_menuPreset.AddChildMenu(&m_menuWave);
-    m_menuPreset.AddChildMenu(&m_menuAugment);
-    m_menuPreset.AddChildMenu(&m_menuPost);
-
-    for (i=0; i<MAX_CUSTOM_SHAPES; i++)
-	    m_menuCustomShape.AddChildMenu(&m_menuShapecode[i]);
-    for (i=0; i<MAX_CUSTOM_WAVES; i++)
-	    m_menuCustomWave.AddChildMenu(&m_menuWavecode[i]);
-    
-	// NOTE: all of the eval menuitems use a CALLBACK function to register the user's changes (see last param)
-	m_menuPreset.AddItem(WASABI_API_LNGSTRINGW(IDS_MENU_EDIT_PRESET_INIT_CODE),
-						 &m_pState->m_szPerFrameInit, MENUITEMTYPE_STRING,
-						 WASABI_API_LNGSTRINGW_BUF(IDS_MENU_EDIT_PRESET_INIT_CODE_TT, buf, 1024),
-						 256, 0, &OnUserEditedPresetInit, sizeof(m_pState->m_szPerFrameInit), 0);
-
-	m_menuPreset.AddItem(WASABI_API_LNGSTRINGW(IDS_MENU_EDIT_PER_FRAME_EQUATIONS),
-						 &m_pState->m_szPerFrameExpr, MENUITEMTYPE_STRING,
-						 WASABI_API_LNGSTRINGW_BUF(IDS_MENU_EDIT_PER_FRAME_EQUATIONS_TT, buf, 1024),
-                         256, 0, &OnUserEditedPerFrame, sizeof(m_pState->m_szPerFrameExpr), 0);
-
-	m_menuPreset.AddItem(WASABI_API_LNGSTRINGW(IDS_MENU_EDIT_PER_VERTEX_EQUATIONS),
-						 &m_pState->m_szPerPixelExpr, MENUITEMTYPE_STRING,
-						 WASABI_API_LNGSTRINGW_BUF(IDS_MENU_EDIT_PER_VERTEX_EQUATIONS_TT, buf, 1024),
-						 256, 0, &OnUserEditedPerPixel, sizeof(m_pState->m_szPerPixelExpr), 0);
-
-	m_menuPreset.AddItem(WASABI_API_LNGSTRINGW(IDS_MENU_EDIT_WARP_SHADER),
-						 &m_pState->m_szWarpShadersText, MENUITEMTYPE_STRING,
-						 WASABI_API_LNGSTRINGW_BUF(IDS_MENU_EDIT_WARP_SHADER_TT, buf, 1024),
-						 256, 0, &OnUserEditedWarpShaders, sizeof(m_pState->m_szWarpShadersText), 0);
-
-	m_menuPreset.AddItem(WASABI_API_LNGSTRINGW(IDS_MENU_EDIT_COMPOSITE_SHADER),
-						 &m_pState->m_szCompShadersText, MENUITEMTYPE_STRING,
-						 WASABI_API_LNGSTRINGW_BUF(IDS_MENU_EDIT_COMPOSITE_SHADER_TT, buf, 1024),
-						 256, 0, &OnUserEditedCompShaders, sizeof(m_pState->m_szCompShadersText), 0);
-
-	m_menuPreset.AddItem(WASABI_API_LNGSTRINGW(IDS_MENU_EDIT_UPGRADE_PRESET_PS_VERSION),
-						 (void*)UI_UPGRADE_PIXEL_SHADER, MENUITEMTYPE_UIMODE,
-						 WASABI_API_LNGSTRINGW_BUF(IDS_MENU_EDIT_UPGRADE_PRESET_PS_VERSION_TT, buf, 1024),
-						 0, 0, NULL, UI_UPGRADE_PIXEL_SHADER, 0);
-
-	m_menuPreset.AddItem(WASABI_API_LNGSTRINGW(IDS_MENU_EDIT_DO_A_PRESET_MASH_UP),
-						 (void*)UI_MASHUP, MENUITEMTYPE_UIMODE,
-						 WASABI_API_LNGSTRINGW_BUF(IDS_MENU_EDIT_DO_A_PRESET_MASH_UP_TT, buf, 1024),
-						 0, 0, NULL, UI_MASHUP, 0);
-
-    //-------------------------------------------
-
-	// menu items
-	#define MEN_T(id) WASABI_API_LNGSTRINGW(id)
-	#define MEN_TT(id) WASABI_API_LNGSTRINGW_BUF(id, buf, 1024)
-
-	m_menuWave.AddItem(MEN_T(IDS_MENU_WAVE_TYPE),			&m_pState->m_nWaveMode,     MENUITEMTYPE_INT, MEN_TT(IDS_MENU_WAVE_TYPE_TT), 0, NUM_WAVES-1);
-	m_menuWave.AddItem(MEN_T(IDS_MENU_SIZE),				&m_pState->m_fWaveScale,    MENUITEMTYPE_LOGBLENDABLE, MEN_TT(IDS_MENU_SIZE_TT));
-	m_menuWave.AddItem(MEN_T(IDS_MENU_SMOOTH),				&m_pState->m_fWaveSmoothing,MENUITEMTYPE_BLENDABLE, MEN_TT(IDS_MENU_SMOOTH_TT), 0.0f, 0.9f);
-	m_menuWave.AddItem(MEN_T(IDS_MENU_MYSTERY_PARAMETER),	&m_pState->m_fWaveParam,    MENUITEMTYPE_BLENDABLE, MEN_TT(IDS_MENU_MYSTERY_PARAMETER_TT), -1.0f, 1.0f);
-	m_menuWave.AddItem(MEN_T(IDS_MENU_POSITION_X),			&m_pState->m_fWaveX,        MENUITEMTYPE_BLENDABLE, MEN_TT(IDS_MENU_POSITION_X_TT), 0, 1);
-	m_menuWave.AddItem(MEN_T(IDS_MENU_POSITION_Y),			&m_pState->m_fWaveY,        MENUITEMTYPE_BLENDABLE, MEN_TT(IDS_MENU_POSITION_Y_TT), 0, 1);
-	m_menuWave.AddItem(MEN_T(IDS_MENU_COLOR_RED),			&m_pState->m_fWaveR,        MENUITEMTYPE_BLENDABLE, MEN_TT(IDS_MENU_COLOR_RED_TT), 0, 1);
-	m_menuWave.AddItem(MEN_T(IDS_MENU_COLOR_GREEN),			&m_pState->m_fWaveG,        MENUITEMTYPE_BLENDABLE, MEN_TT(IDS_MENU_COLOR_GREEN_TT), 0, 1);
-	m_menuWave.AddItem(MEN_T(IDS_MENU_COLOR_BLUE),			&m_pState->m_fWaveB,        MENUITEMTYPE_BLENDABLE, MEN_TT(IDS_MENU_COLOR_BLUE_TT), 0, 1);
-	m_menuWave.AddItem(MEN_T(IDS_MENU_OPACITY),				&m_pState->m_fWaveAlpha,    MENUITEMTYPE_LOGBLENDABLE, MEN_TT(IDS_MENU_OPACITY_TT), 0.001f, 100.0f);
-	m_menuWave.AddItem(MEN_T(IDS_MENU_USE_DOTS),			&m_pState->m_bWaveDots,     MENUITEMTYPE_BOOL, MEN_TT(IDS_MENU_USE_DOTS_TT));
-	m_menuWave.AddItem(MEN_T(IDS_MENU_DRAW_THICK),			&m_pState->m_bWaveThick,    MENUITEMTYPE_BOOL, MEN_TT(IDS_MENU_DRAW_THICK_TT));
-	m_menuWave.AddItem(MEN_T(IDS_MENU_MODULATE_OPACITY_BY_VOLUME),	&m_pState->m_bModWaveAlphaByVolume,	MENUITEMTYPE_BOOL,      MEN_TT(IDS_MENU_MODULATE_OPACITY_BY_VOLUME_TT));
-	m_menuWave.AddItem(MEN_T(IDS_MENU_MODULATION_TRANSPARENT_VOLUME), &m_pState->m_fModWaveAlphaStart,	MENUITEMTYPE_BLENDABLE, MEN_TT(IDS_MENU_MODULATION_TRANSPARENT_VOLUME_TT), 0.0f, 2.0f);
-	m_menuWave.AddItem(MEN_T(IDS_MENU_MODULATION_OPAQUE_VOLUME),	&m_pState->m_fModWaveAlphaEnd,      MENUITEMTYPE_BLENDABLE, MEN_TT(IDS_MENU_MODULATION_OPAQUE_VOLUME_TT), 0.0f, 2.0f);
-	m_menuWave.AddItem(MEN_T(IDS_MENU_ADDITIVE_DRAWING),	&m_pState->m_bAdditiveWaves, MENUITEMTYPE_BOOL, MEN_TT(IDS_MENU_ADDITIVE_DRAWING_TT));
-	m_menuWave.AddItem(MEN_T(IDS_MENU_COLOR_BRIGHTENING),	&m_pState->m_bMaximizeWaveColor, MENUITEMTYPE_BOOL, MEN_TT(IDS_MENU_COLOR_BRIGHTENING_TT));
-
-	m_menuAugment.AddItem(MEN_T(IDS_MENU_OUTER_BORDER_THICKNESS),	&m_pState->m_fOuterBorderSize,	MENUITEMTYPE_BLENDABLE, MEN_TT(IDS_MENU_OUTER_BORDER_THICKNESS_TT), 0, 0.5f);
-	m_menuAugment.AddItem(MEN_T(IDS_MENU_COLOR_RED_OUTER),			&m_pState->m_fOuterBorderR,		MENUITEMTYPE_BLENDABLE, MEN_TT(IDS_MENU_COLOR_RED_OUTER_TT), 0, 1);
-	m_menuAugment.AddItem(MEN_T(IDS_MENU_COLOR_GREEN_OUTER),		&m_pState->m_fOuterBorderG,		MENUITEMTYPE_BLENDABLE, MEN_TT(IDS_MENU_COLOR_GREEN_OUTER_TT), 0, 1);
-	m_menuAugment.AddItem(MEN_T(IDS_MENU_COLOR_BLUE_OUTER),			&m_pState->m_fOuterBorderB,		MENUITEMTYPE_BLENDABLE, MEN_TT(IDS_MENU_COLOR_BLUE_OUTER_TT), 0, 1);
-	m_menuAugment.AddItem(MEN_T(IDS_MENU_OPACITY_OUTER),			&m_pState->m_fOuterBorderA,		MENUITEMTYPE_BLENDABLE, MEN_TT(IDS_MENU_OPACITY_OUTER_TT), 0, 1);
-	m_menuAugment.AddItem(MEN_T(IDS_MENU_INNER_BORDER_THICKNESS),	&m_pState->m_fInnerBorderSize,	MENUITEMTYPE_BLENDABLE, MEN_TT(IDS_MENU_INNER_BORDER_THICKNESS_TT), 0, 0.5f);
-	m_menuAugment.AddItem(MEN_T(IDS_MENU_COLOR_RED_OUTER),			&m_pState->m_fInnerBorderR,		MENUITEMTYPE_BLENDABLE, MEN_TT(IDS_MENU_COLOR_RED_INNER_TT), 0, 1);
-	m_menuAugment.AddItem(MEN_T(IDS_MENU_COLOR_GREEN_OUTER),		&m_pState->m_fInnerBorderG,		MENUITEMTYPE_BLENDABLE, MEN_TT(IDS_MENU_COLOR_GREEN_INNER_TT), 0, 1);
-	m_menuAugment.AddItem(MEN_T(IDS_MENU_COLOR_BLUE_OUTER),			&m_pState->m_fInnerBorderB,		MENUITEMTYPE_BLENDABLE, MEN_TT(IDS_MENU_COLOR_BLUE_INNER_TT), 0, 1);
-	m_menuAugment.AddItem(MEN_T(IDS_MENU_OPACITY_OUTER),			&m_pState->m_fInnerBorderA,		MENUITEMTYPE_BLENDABLE, MEN_TT(IDS_MENU_OPACITY_INNER_TT), 0, 1);
-	m_menuAugment.AddItem(MEN_T(IDS_MENU_MOTION_VECTOR_OPACITY),	&m_pState->m_fMvA,				MENUITEMTYPE_BLENDABLE, MEN_TT(IDS_MENU_MOTION_VECTOR_OPACITY_TT), 0, 1);
-	m_menuAugment.AddItem(MEN_T(IDS_MENU_NUM_MOT_VECTORS_X),		&m_pState->m_fMvX,				MENUITEMTYPE_BLENDABLE, MEN_TT(IDS_MENU_NUM_MOT_VECTORS_X_TT), 0, 64);
-	m_menuAugment.AddItem(MEN_T(IDS_MENU_NUM_MOT_VECTORS_Y),		&m_pState->m_fMvY,				MENUITEMTYPE_BLENDABLE, MEN_TT(IDS_MENU_NUM_MOT_VECTORS_Y_TT), 0, 48);
-	m_menuAugment.AddItem(MEN_T(IDS_MENU_OFFSET_X),					&m_pState->m_fMvDX,				MENUITEMTYPE_BLENDABLE, MEN_TT(IDS_MENU_OFFSET_X_TT), -1, 1);
-	m_menuAugment.AddItem(MEN_T(IDS_MENU_OFFSET_Y),					&m_pState->m_fMvDY,				MENUITEMTYPE_BLENDABLE, MEN_TT(IDS_MENU_OFFSET_Y_TT), -1, 1);
-	m_menuAugment.AddItem(MEN_T(IDS_MENU_TRAIL_LENGTH),				&m_pState->m_fMvL,				MENUITEMTYPE_BLENDABLE, MEN_TT(IDS_MENU_TRAIL_LENGTH_TT), 0, 5);
-	m_menuAugment.AddItem(MEN_T(IDS_MENU_COLOR_RED_OUTER),			&m_pState->m_fMvR,				MENUITEMTYPE_BLENDABLE, MEN_TT(IDS_MENU_COLOR_RED_MOTION_VECTOR_TT), 0, 1);
-	m_menuAugment.AddItem(MEN_T(IDS_MENU_COLOR_GREEN_OUTER),		&m_pState->m_fMvG,				MENUITEMTYPE_BLENDABLE, MEN_TT(IDS_MENU_COLOR_GREEN_MOTION_VECTOR_TT), 0, 1);
-	m_menuAugment.AddItem(MEN_T(IDS_MENU_COLOR_BLUE_OUTER),			&m_pState->m_fMvB,				MENUITEMTYPE_BLENDABLE, MEN_TT(IDS_MENU_COLOR_BLUE_MOTION_VECTOR_TT), 0, 1);
-
-	m_menuMotion.AddItem(MEN_T(IDS_MENU_ZOOM_AMOUNT),			&m_pState->m_fZoom,				MENUITEMTYPE_LOGBLENDABLE, MEN_TT(IDS_MENU_ZOOM_AMOUNT_TT));
-	m_menuMotion.AddItem(MEN_T(IDS_MENU_ZOOM_EXPONENT),			&m_pState->m_fZoomExponent,		MENUITEMTYPE_LOGBLENDABLE, MEN_TT(IDS_MENU_ZOOM_EXPONENT_TT));
-	m_menuMotion.AddItem(MEN_T(IDS_MENU_WARP_AMOUNT),			&m_pState->m_fWarpAmount,		MENUITEMTYPE_LOGBLENDABLE, MEN_TT(IDS_MENU_WARP_AMOUNT_TT));
-	m_menuMotion.AddItem(MEN_T(IDS_MENU_WARP_SCALE),			&m_pState->m_fWarpScale,		MENUITEMTYPE_LOGBLENDABLE, MEN_TT(IDS_MENU_WARP_SCALE_TT));
-	m_menuMotion.AddItem(MEN_T(IDS_MENU_WARP_SPEED),			&m_pState->m_fWarpAnimSpeed,	MENUITEMTYPE_LOGFLOAT,     MEN_TT(IDS_MENU_WARP_SPEED_TT));
-	m_menuMotion.AddItem(MEN_T(IDS_MENU_ROTATION_AMOUNT),		&m_pState->m_fRot,				MENUITEMTYPE_BLENDABLE,    MEN_TT(IDS_MENU_ROTATION_AMOUNT_TT), -1.00f, 1.00f);
-	m_menuMotion.AddItem(MEN_T(IDS_MENU_ROTATION_CENTER_OF_X),	&m_pState->m_fRotCX,			MENUITEMTYPE_BLENDABLE,    MEN_TT(IDS_MENU_ROTATION_CENTER_OF_X_TT), -1.0f, 2.0f);
-	m_menuMotion.AddItem(MEN_T(IDS_MENU_ROTATION_CENTER_OF_Y),	&m_pState->m_fRotCY,			MENUITEMTYPE_BLENDABLE,    MEN_TT(IDS_MENU_ROTATION_CENTER_OF_Y_TT), -1.0f, 2.0f);
-	m_menuMotion.AddItem(MEN_T(IDS_MENU_TRANSLATION_X),			&m_pState->m_fXPush,			MENUITEMTYPE_BLENDABLE,    MEN_TT(IDS_MENU_TRANSLATION_X_TT), -1.0f, 1.0f);
-	m_menuMotion.AddItem(MEN_T(IDS_MENU_TRANSLATION_Y),			&m_pState->m_fYPush,			MENUITEMTYPE_BLENDABLE,    MEN_TT(IDS_MENU_TRANSLATION_Y_TT), -1.0f, 1.0f);
-	m_menuMotion.AddItem(MEN_T(IDS_MENU_SCALING_X),				&m_pState->m_fStretchX,			MENUITEMTYPE_LOGBLENDABLE, MEN_TT(IDS_MENU_SCALING_X_TT));
-	m_menuMotion.AddItem(MEN_T(IDS_MENU_SCALING_Y),				&m_pState->m_fStretchY,			MENUITEMTYPE_LOGBLENDABLE, MEN_TT(IDS_MENU_SCALING_Y_TT));
-
-	m_menuPost.AddItem(MEN_T(IDS_MENU_SUSTAIN_LEVEL),			&m_pState->m_fDecay,			MENUITEMTYPE_BLENDABLE, MEN_TT(IDS_MENU_SUSTAIN_LEVEL_TT), 0.50f, 1.0f);
-	m_menuPost.AddItem(MEN_T(IDS_MENU_DARKEN_CENTER),			&m_pState->m_bDarkenCenter,		MENUITEMTYPE_BOOL,      MEN_TT(IDS_MENU_DARKEN_CENTER_TT));
-	m_menuPost.AddItem(MEN_T(IDS_MENU_GAMMA_ADJUSTMENT),		&m_pState->m_fGammaAdj,			MENUITEMTYPE_BLENDABLE, MEN_TT(IDS_MENU_GAMMA_ADJUSTMENT_TT), 1.0f, 8.0f);
-	m_menuPost.AddItem(MEN_T(IDS_MENU_HUE_SHADER),				&m_pState->m_fShader,			MENUITEMTYPE_BLENDABLE, MEN_TT(IDS_MENU_HUE_SHADER_TT), 0.0f, 1.0f);
-	m_menuPost.AddItem(MEN_T(IDS_MENU_VIDEO_ECHO_ALPHA),		&m_pState->m_fVideoEchoAlpha,	MENUITEMTYPE_BLENDABLE, MEN_TT(IDS_MENU_VIDEO_ECHO_ALPHA_TT), 0.0f, 1.0f);
-	m_menuPost.AddItem(MEN_T(IDS_MENU_VIDEO_ECHO_ZOOM),			&m_pState->m_fVideoEchoZoom,	MENUITEMTYPE_LOGBLENDABLE, MEN_TT(IDS_MENU_VIDEO_ECHO_ZOOM_TT));
-	m_menuPost.AddItem(MEN_T(IDS_MENU_VIDEO_ECHO_ORIENTATION),	&m_pState->m_nVideoEchoOrientation, MENUITEMTYPE_INT,	MEN_TT(IDS_MENU_VIDEO_ECHO_ORIENTATION_TT), 0.0f, 3.0f);
-	 m_menuPost.AddItem(MEN_T(IDS_MENU_TEXTURE_WRAP),			&m_pState->m_bTexWrap,              MENUITEMTYPE_BOOL,	MEN_TT(IDS_MENU_TEXTURE_WRAP_TT));
-	//m_menuPost.AddItem("stereo 3D",               &m_pState->m_bRedBlueStereo,        MENUITEMTYPE_BOOL, "displays the image in stereo 3D; you need 3D glasses (with red and blue lenses) for this.");
-	m_menuPost.AddItem(MEN_T(IDS_MENU_FILTER_INVERT),			&m_pState->m_bInvert,			MENUITEMTYPE_BOOL, MEN_TT(IDS_MENU_FILTER_INVERT_TT));
-	m_menuPost.AddItem(MEN_T(IDS_MENU_FILTER_BRIGHTEN),			&m_pState->m_bBrighten,			MENUITEMTYPE_BOOL, MEN_TT(IDS_MENU_FILTER_BRIGHTEN_TT));
-	m_menuPost.AddItem(MEN_T(IDS_MENU_FILTER_DARKEN),			&m_pState->m_bDarken,			MENUITEMTYPE_BOOL, MEN_TT(IDS_MENU_FILTER_DARKEN_TT));
-	m_menuPost.AddItem(MEN_T(IDS_MENU_FILTER_SOLARIZE),			&m_pState->m_bSolarize,			MENUITEMTYPE_BOOL, MEN_TT(IDS_MENU_FILTER_SOLARIZE_TT));
-	m_menuPost.AddItem(MEN_T(IDS_MENU_BLUR1_EDGE_DARKEN_AMOUNT),&m_pState->m_fBlur1EdgeDarken,	MENUITEMTYPE_FLOAT,	MEN_TT(IDS_MENU_BLUR1_EDGE_DARKEN_AMOUNT_TT), 0.0f, 1.0f);
-	m_menuPost.AddItem(MEN_T(IDS_MENU_BLUR1_MIN_COLOR_VALUE),	&m_pState->m_fBlur1Min,			MENUITEMTYPE_FLOAT,	MEN_TT(IDS_MENU_BLUR1_MIN_COLOR_VALUE_TT), 0.0f, 1.0f);
-	m_menuPost.AddItem(MEN_T(IDS_MENU_BLUR1_MAX_COLOR_VALUE),	&m_pState->m_fBlur1Max,			MENUITEMTYPE_FLOAT, MEN_TT(IDS_MENU_BLUR1_MAX_COLOR_VALUE_TT), 0.0f, 1.0f);
-	m_menuPost.AddItem(MEN_T(IDS_MENU_BLUR2_MIN_COLOR_VALUE),	&m_pState->m_fBlur2Min,			MENUITEMTYPE_FLOAT, MEN_TT(IDS_MENU_BLUR2_MIN_COLOR_VALUE_TT), 0.0f, 1.0f);
-	m_menuPost.AddItem(MEN_T(IDS_MENU_BLUR2_MAX_COLOR_VALUE),	&m_pState->m_fBlur2Max,			MENUITEMTYPE_FLOAT, MEN_TT(IDS_MENU_BLUR2_MAX_COLOR_VALUE_TT), 0.0f, 1.0f);
-	m_menuPost.AddItem(MEN_T(IDS_MENU_BLUR3_MIN_COLOR_VALUE),	&m_pState->m_fBlur3Min,			MENUITEMTYPE_FLOAT, MEN_TT(IDS_MENU_BLUR3_MIN_COLOR_VALUE_TT), 0.0f, 1.0f);
-	m_menuPost.AddItem(MEN_T(IDS_MENU_BLUR3_MAX_COLOR_VALUE),	&m_pState->m_fBlur3Max,			MENUITEMTYPE_FLOAT, MEN_TT(IDS_MENU_BLUR3_MAX_COLOR_VALUE_TT), 0.0f, 1.0f);
-
-    for (i=0; i<MAX_CUSTOM_WAVES; i++)
-    {
-        // blending: do both; fade opacities in/out (w/exagerrated weighting)
-        m_menuWavecode[i].AddItem(MEN_T(IDS_MENU_ENABLED),			&m_pState->m_wave[i].enabled,	MENUITEMTYPE_BOOL,	MEN_TT(IDS_MENU_ENABLED_TT)); // bool
-        m_menuWavecode[i].AddItem(MEN_T(IDS_MENU_NUMBER_OF_SAMPLES),&m_pState->m_wave[i].samples,	MENUITEMTYPE_INT,	MEN_TT(IDS_MENU_NUMBER_OF_SAMPLES_TT), 2, 512);        // 0-512
-        m_menuWavecode[i].AddItem(MEN_T(IDS_MENU_L_R_SEPARATION),	&m_pState->m_wave[i].sep,		MENUITEMTYPE_INT,	MEN_TT(IDS_MENU_L_R_SEPARATION_TT), 0, 256);        // 0-512
-        m_menuWavecode[i].AddItem(MEN_T(IDS_MENU_SCALING),			&m_pState->m_wave[i].scaling,	MENUITEMTYPE_LOGFLOAT, MEN_TT(IDS_MENU_SCALING_TT));
-        m_menuWavecode[i].AddItem(MEN_T(IDS_MENU_SMOOTH),			&m_pState->m_wave[i].smoothing,	MENUITEMTYPE_FLOAT, MEN_TT(IDS_MENU_SMOOTHING_TT), 0, 1);
-	    m_menuWavecode[i].AddItem(MEN_T(IDS_MENU_COLOR_RED),		&m_pState->m_wave[i].r,			MENUITEMTYPE_FLOAT, MEN_TT(IDS_MENU_COLOR_RED_TT), 0, 1);
-	    m_menuWavecode[i].AddItem(MEN_T(IDS_MENU_COLOR_GREEN),		&m_pState->m_wave[i].g,			MENUITEMTYPE_FLOAT, MEN_TT(IDS_MENU_COLOR_GREEN_TT), 0, 1);
-		m_menuWavecode[i].AddItem(MEN_T(IDS_MENU_COLOR_BLUE),		&m_pState->m_wave[i].b,			MENUITEMTYPE_FLOAT, MEN_TT(IDS_MENU_COLOR_BLUE_TT), 0, 1);
-	    m_menuWavecode[i].AddItem(MEN_T(IDS_MENU_OPACITY),			&m_pState->m_wave[i].a,			MENUITEMTYPE_FLOAT, MEN_TT(IDS_MENU_OPACITY_WAVE_TT), 0, 1);
-        m_menuWavecode[i].AddItem(MEN_T(IDS_MENU_USE_SPECTRUM),		&m_pState->m_wave[i].bSpectrum,	MENUITEMTYPE_BOOL,	MEN_TT(IDS_MENU_USE_SPECTRUM_TT));        // 0-5 [0=wave left, 1=wave center, 2=wave right; 3=spectrum left, 4=spec center, 5=spec right]
-        m_menuWavecode[i].AddItem(MEN_T(IDS_MENU_USE_DOTS),			&m_pState->m_wave[i].bUseDots,	MENUITEMTYPE_BOOL,	MEN_TT(IDS_MENU_USE_DOTS_WAVE_TT)); // bool
-        m_menuWavecode[i].AddItem(MEN_T(IDS_MENU_DRAW_THICK),		&m_pState->m_wave[i].bDrawThick,MENUITEMTYPE_BOOL,	MEN_TT(IDS_MENU_DRAW_THICK_WAVE_TT)); // bool
-        m_menuWavecode[i].AddItem(MEN_T(IDS_MENU_ADDITIVE_DRAWING),	&m_pState->m_wave[i].bAdditive,	MENUITEMTYPE_BOOL,	MEN_TT(IDS_MENU_ADDITIVE_DRAWING_WAVE_TT)); // bool
-        m_menuWavecode[i].AddItem(MEN_T(IDS_MENU_EXPORT_TO_FILE),	(void*)UI_EXPORT_WAVE,			MENUITEMTYPE_UIMODE,MEN_TT(IDS_MENU_EXPORT_TO_FILE_TT), 0, 0, NULL, UI_EXPORT_WAVE, i);
-        m_menuWavecode[i].AddItem(MEN_T(IDS_MENU_IMPORT_FROM_FILE),	(void*)UI_IMPORT_WAVE,			MENUITEMTYPE_UIMODE,MEN_TT(IDS_MENU_IMPORT_FROM_FILE_TT), 0, 0, NULL, UI_IMPORT_WAVE, i);
-        m_menuWavecode[i].AddItem(MEN_T(IDS_MENU_EDIT_INIT_CODE),	&m_pState->m_wave[i].m_szInit,	MENUITEMTYPE_STRING,MEN_TT(IDS_MENU_EDIT_INIT_CODE_TT), 256, 0, &OnUserEditedWavecodeInit, sizeof(m_pState->m_wave[i].m_szInit), 0);
-        m_menuWavecode[i].AddItem(MEN_T(IDS_MENU_EDIT_PER_FRAME_CODE),	&m_pState->m_wave[i].m_szPerFrame,	MENUITEMTYPE_STRING, MEN_TT(IDS_MENU_EDIT_PER_FRAME_CODE_TT), 256, 0, &OnUserEditedWavecode, sizeof(m_pState->m_wave[i].m_szPerFrame), 0);
-        m_menuWavecode[i].AddItem(MEN_T(IDS_MENU_EDIT_PER_POINT_CODE),	&m_pState->m_wave[i].m_szPerPoint,  MENUITEMTYPE_STRING, MEN_TT(IDS_MENU_EDIT_PER_POINT_CODE_TT), 256, 0, &OnUserEditedWavecode, sizeof(m_pState->m_wave[i].m_szPerPoint), 0);
-    }
-
-    for (i=0; i<MAX_CUSTOM_SHAPES; i++)
-    {
-        // blending: do both; fade opacities in/out (w/exagerrated weighting)
-        m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_ENABLED),				&m_pState->m_shape[i].enabled,	MENUITEMTYPE_BOOL,	MEN_TT(IDS_MENU_ENABLED_SHAPE_TT)); // bool
-        m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_NUMBER_OF_INSTANCES),	&m_pState->m_shape[i].instances,MENUITEMTYPE_INT,	MEN_TT(IDS_MENU_NUMBER_OF_INSTANCES_TT), 1, 1024);        
-        m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_NUMBER_OF_SIDES),		&m_pState->m_shape[i].sides,	MENUITEMTYPE_INT,	MEN_TT(IDS_MENU_NUMBER_OF_SIDES_TT), 3, 100);
-        m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_DRAW_THICK),			&m_pState->m_shape[i].thickOutline,	MENUITEMTYPE_BOOL,	MEN_TT(IDS_MENU_DRAW_THICK_SHAPE_TT)); // bool
-        m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_ADDITIVE_DRAWING),	&m_pState->m_shape[i].additive,	MENUITEMTYPE_BOOL,	MEN_TT(IDS_MENU_ADDITIVE_DRAWING_SHAPE_TT)); // bool
-	    m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_X_POSITION),			&m_pState->m_shape[i].x,		MENUITEMTYPE_FLOAT, MEN_TT(IDS_MENU_X_POSITION_TT), 0, 1);
-	    m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_Y_POSITION),			&m_pState->m_shape[i].y,		MENUITEMTYPE_FLOAT, MEN_TT(IDS_MENU_Y_POSITION_TT), 0, 1);
-	    m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_RADIUS),				&m_pState->m_shape[i].rad,		MENUITEMTYPE_LOGFLOAT, MEN_TT(IDS_MENU_RADIUS_TT));
-	    m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_ANGLE),				&m_pState->m_shape[i].ang,		MENUITEMTYPE_FLOAT,	MEN_TT(IDS_MENU_ANGLE_TT), 0, 3.1415927f*2.0f);
-        m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_TEXTURED),			&m_pState->m_shape[i].textured,	MENUITEMTYPE_BOOL,	MEN_TT(IDS_MENU_TEXTURED_TT)); // bool
-        m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_TEXTURE_ZOOM),		&m_pState->m_shape[i].tex_zoom,	MENUITEMTYPE_LOGFLOAT, MEN_TT(IDS_MENU_TEXTURE_ZOOM_TT)); // bool
-        m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_TEXTURE_ANGLE),		&m_pState->m_shape[i].tex_ang,	MENUITEMTYPE_FLOAT,	MEN_TT(IDS_MENU_TEXTURE_ANGLE_TT), 0, 3.1415927f*2.0f); // bool
-	    m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_INNER_COLOR_RED),		&m_pState->m_shape[i].r,		MENUITEMTYPE_FLOAT, MEN_TT(IDS_MENU_INNER_COLOR_RED_TT), 0, 1);
-	    m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_INNER_COLOR_GREEN),	&m_pState->m_shape[i].g,		MENUITEMTYPE_FLOAT, MEN_TT(IDS_MENU_INNER_COLOR_GREEN_TT), 0, 1);
-	    m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_INNER_COLOR_BLUE),	&m_pState->m_shape[i].b,		MENUITEMTYPE_FLOAT, MEN_TT(IDS_MENU_INNER_COLOR_BLUE_TT), 0, 1);
-	    m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_INNER_OPACITY),		&m_pState->m_shape[i].a,		MENUITEMTYPE_FLOAT, MEN_TT(IDS_MENU_INNER_OPACITY_TT), 0, 1);
-	    m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_OUTER_COLOR_RED),		&m_pState->m_shape[i].r2,		MENUITEMTYPE_FLOAT, MEN_TT(IDS_MENU_OUTER_COLOR_RED_TT), 0, 1);
-	    m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_OUTER_COLOR_GREEN),	&m_pState->m_shape[i].g2,		MENUITEMTYPE_FLOAT, MEN_TT(IDS_MENU_OUTER_COLOR_GREEN_TT), 0, 1);
-	    m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_OUTER_COLOR_BLUE),	&m_pState->m_shape[i].b2,		MENUITEMTYPE_FLOAT, MEN_TT(IDS_MENU_OUTER_COLOR_BLUE_TT), 0, 1);
-	    m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_OUTER_OPACITY),		&m_pState->m_shape[i].a2,		MENUITEMTYPE_FLOAT, MEN_TT(IDS_MENU_OUTER_OPACITY_TT), 0, 1);
-	    m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_BORDER_COLOR_RED),	&m_pState->m_shape[i].border_r,	MENUITEMTYPE_FLOAT, MEN_TT(IDS_MENU_BORDER_COLOR_RED_TT), 0, 1);
-	    m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_BORDER_COLOR_GREEN),	&m_pState->m_shape[i].border_g,	MENUITEMTYPE_FLOAT, MEN_TT(IDS_MENU_BORDER_COLOR_GREEN_TT), 0, 1);
-	    m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_BORDER_COLOR_BLUE),	&m_pState->m_shape[i].border_b,	MENUITEMTYPE_FLOAT, MEN_TT(IDS_MENU_BORDER_COLOR_BLUE_TT), 0, 1);
-	    m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_BORDER_OPACITY),		&m_pState->m_shape[i].border_a,	MENUITEMTYPE_FLOAT, MEN_TT(IDS_MENU_BORDER_OPACITY_TT), 0, 1);
-        m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_EXPORT_TO_FILE),		NULL,							MENUITEMTYPE_UIMODE, MEN_TT(IDS_MENU_EXPORT_TO_FILE_SHAPE_TT), 0, 0, NULL, UI_EXPORT_SHAPE, i);
-        m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_IMPORT_FROM_FILE),	NULL,							MENUITEMTYPE_UIMODE, MEN_TT(IDS_MENU_IMPORT_FROM_FILE_SHAPE_TT), 0, 0, NULL, UI_IMPORT_SHAPE, i);
-        m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_EDIT_INIT_CODE),		&m_pState->m_shape[i].m_szInit, MENUITEMTYPE_STRING, MEN_TT(IDS_MENU_EDIT_INIT_CODE_SHAPE_TT), 256, 0, &OnUserEditedShapecodeInit, sizeof(m_pState->m_shape[i].m_szInit), 0);
-        m_menuShapecode[i].AddItem(MEN_T(IDS_MENU_EDIT_PER_FRAME_INSTANCE_CODE),	&m_pState->m_shape[i].m_szPerFrame, MENUITEMTYPE_STRING, MEN_TT(IDS_MENU_EDIT_PER_FRAME_INSTANCE_CODE_TT), 256, 0, &OnUserEditedShapecode, sizeof(m_pState->m_shape[i].m_szPerFrame), 0);
-        //m_menuShapecode[i].AddItem("[ edit per-point code ]",&m_pState->m_shape[i].m_szPerPoint,  MENUITEMTYPE_STRING, "IN: sample [0..1]; value1 [left ch], value2 [right ch], plus all vars for per-frame code / OUT: x,y; r,g,b,a; t1-t8", 256, 0, &OnUserEditedWavecode);       
-    }
-}
-*/
-
-/*
-void CPlugin::WriteRealtimeConfig()
-{
-	WritePrivateProfileIntW(m_bShowFPS, L"bShowFPS",GetConfigIniFile(), L"settings");
-	WritePrivateProfileIntW(m_bShowRating, L"bShowRating",GetConfigIniFile(), L"settings");
-	WritePrivateProfileIntW(m_bShowPresetInfo, L"bShowPresetInfo",GetConfigIniFile(), L"settings");
-	WritePrivateProfileIntW(m_bShowSongTitle, L"bShowSongTitle",GetConfigIniFile(), L"settings");
-	WritePrivateProfileIntW(m_bShowSongTime, L"bShowSongTime",GetConfigIniFile(), L"settings");
-	WritePrivateProfileIntW(m_bShowSongLen, L"bShowSongLen",GetConfigIniFile(), L"settings");
-}
-*/
 
 void CPlugin::dumpmsg(wchar_t *s)
 {
@@ -4326,22 +3848,7 @@ void CPlugin::LoadRandomPreset(float fBlendTime)
 	// make sure file list is ok
 	if (m_nPresets - m_nDirs == 0)
 	{
-		if (m_nPresets - m_nDirs == 0)
-		{
-			/*// note: this error message is repeated in milkdropfs.cpp in DrawText()
-			wchar_t buf[1024];
-            swprintf(buf, WASABI_API_LNGSTRINGW(IDS_ERROR_NO_PRESET_FILE_FOUND_IN_X_MILK), m_szPresetDir);
-            AddError(buf, 6.0f, ERR_MISC, true);
-
-            // also bring up the dir. navigation menu...
-			if (m_UI_mode == UI_REGULAR || m_UI_mode == UI_MENU)
-		    {
-			    m_UI_mode = UI_LOAD;
-			    m_bUserPagedUp = false;
-			    m_bUserPagedDown = false;
-            }*/
-			return;
-		}
+		return;
 	}
 	
     bool bHistoryEmpty = (m_presetHistoryFwdFence==m_presetHistoryBackFence);
@@ -4706,9 +4213,6 @@ void CPlugin::OnFinishedLoadingPreset()
 
     //SetMenusForPresetVersion( m_pState->m_nWarpPSVersion, m_pState->m_nCompPSVersion );
     m_nPresetsLoadedTotal++; //only increment this on COMPLETION of the load.
-    
-    for (int mash=0; mash<MASH_SLOTS; mash++)
-        m_nMashPreset[mash] = m_nCurrentPreset;
 }
 
 void CPlugin::LoadPresetTick()
@@ -5070,9 +4574,10 @@ retry:
         g_plugin.m_presets.push_back(temp_presets[i]);
     g_plugin.m_nPresets = temp_nPresets;
     g_plugin.m_nDirs    = temp_nDirs;
-    g_plugin.m_bPresetListReady = true;
+//    g_plugin.m_bPresetListReady = true;
 
-    if (g_plugin.m_bPresetListReady && g_plugin.m_nPresets == 0)
+//    if (g_plugin.m_bPresetListReady && g_plugin.m_nPresets == 0)
+    if (g_plugin.m_nPresets == 0)
     {
         // no presets OR directories found - weird - but it happens.
         // --> revert back to plugins dir
@@ -5094,7 +4599,7 @@ retry:
         goto retry;
     }
 
-    if (g_plugin.m_bPresetListReady)
+//    if (g_plugin.m_bPresetListReady)
     {
     	g_plugin.MergeSortPresets(0, g_plugin.m_nPresets-1);
 
@@ -5127,6 +4632,7 @@ retry:
     }
 
     LeaveCriticalSection(&g_cs);
+	g_plugin.m_bPresetListReady = true;
 
     g_bThreadAlive = false;
 //    _endthreadex(0); // calling this here stops destructors from being called for local objects!
@@ -5275,37 +4781,6 @@ void CPlugin::MergeSortPresets(int left, int right)
 		}
 	}
 }
-
-void CPlugin::WaitString_NukeSelection()
-{
-	if (m_waitstring.bActive &&
-		m_waitstring.nSelAnchorPos != -1)
-	{
-		// nuke selection.  note: start & end are INCLUSIVE.
-		int start = (m_waitstring.nCursorPos < m_waitstring.nSelAnchorPos) ? m_waitstring.nCursorPos : m_waitstring.nSelAnchorPos;
-		int end   = (m_waitstring.nCursorPos > m_waitstring.nSelAnchorPos) ? m_waitstring.nCursorPos - 1 : m_waitstring.nSelAnchorPos - 1;
-		int len   = (m_waitstring.bDisplayAsCode ? lstrlenA((char*)m_waitstring.szText) : lstrlenW(m_waitstring.szText));
-		int how_far_to_shift   = end - start + 1;
-		int num_chars_to_shift = len - end;		// includes NULL char
-		
-		if (m_waitstring.bDisplayAsCode)
-		{
-			char* ptr = (char*)m_waitstring.szText;
-			for (int i=0; i<num_chars_to_shift; i++)
-				*(ptr + start + i) = *(ptr + start + i + how_far_to_shift);
-		}
-		else
-		{
-			for (int i=0; i<num_chars_to_shift; i++)
-				m_waitstring.szText[start + i] = m_waitstring.szText[start + i + how_far_to_shift];
-		}
-		
-		// clear selection
-		m_waitstring.nCursorPos = start;
-		m_waitstring.nSelAnchorPos = -1;
-	}
-}
-
 
 void CPlugin::DoCustomSoundAnalysis()
 {

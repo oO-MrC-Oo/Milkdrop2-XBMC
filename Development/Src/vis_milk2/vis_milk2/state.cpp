@@ -27,7 +27,6 @@ IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISI
 OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-//#include "api.h"
 #include "state.h"
 #include "support.h"
 #include "../ns-eel2/ns-eel.h"
@@ -35,7 +34,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "utility.h"
 #include <windows.h>
 #include <locale.h>
-//#include "resource.h"
 
 extern CPlugin g_plugin;		// declared in main.cpp
 

@@ -67,7 +67,6 @@ class DXContext
         //DXContext(HWND hWndWinamp,HINSTANCE hInstance,LPCWSTR szClassName,LPCSTR szWindowCaption,WNDPROC pProc,LONG_PTR uWindowLong, int minimize_winamp, wchar_t* szIniFile);
         ~DXContext();
         BOOL StartOrRestartDevice(DXCONTEXT_PARAMS *pParams); // also serves as Init() function
-        BOOL OnUserResizeWindow(RECT *new_window_rect, RECT *new_client_rect);
         void OnTrulyExiting() { m_truly_exiting = 1; }
         void UpdateMonitorWorkRect();
         int  GetBitDepth() { return m_bpp;     };

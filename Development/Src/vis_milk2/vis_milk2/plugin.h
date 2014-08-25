@@ -297,7 +297,6 @@ public:
     //====[ 1. members added to create this specific example plugin: ]================================================
 
         /// CONFIG PANEL SETTINGS THAT WE'VE ADDED (TAB #2)
-        bool		m_bFirstRun;
         float		m_fBlendTimeAuto;		// blend time when preset auto-switches
         float		m_fBlendTimeUser;		// blend time when user loads a new preset
         float		m_fTimeBetweenPresets;		// <- this is in addition to m_fBlendTimeAuto
@@ -322,15 +321,12 @@ public:
         int			m_nGridY;
 
         bool		m_bShowPressF1ForHelp;
-        //char		m_szMonitorName[256];
-        bool		m_bShowMenuToolTips;
         int			m_n16BitGamma;
         bool		m_bAutoGamma;
         //int		m_nFpsLimit;
         //int			m_cLeftEye3DColor[3];
         //int			m_cRightEye3DColor[3];
         bool		m_bEnableRating;
-        //bool        m_bInstaScan;
         bool		m_bSongTitleAnims;
         float		m_fSongTitleAnimDuration;
         float		m_fTimeBetweenRandomSongTitles;
@@ -420,35 +416,12 @@ public:
         CState		m_state_DO_NOT_USE[3];	// do not use; use pState and pOldState instead.
         ui_mode		m_UI_mode;				// can be UI_REGULAR, UI_LOAD, UI_SAVEHOW, or UI_SAVEAS 
 
-        #define MASH_SLOTS 5
-        #define MASH_APPLY_DELAY_FRAMES 1
-        int         m_nMashSlot;    //0..MASH_SLOTS-1
-        //char        m_szMashDir[MASH_SLOTS][MAX_PATH];
-        int         m_nMashPreset[MASH_SLOTS];
-        int         m_nLastMashChangeFrame[MASH_SLOTS];
-
         //td_playlist_entry *m_szPlaylist;	// array of 128-char strings
         //int		m_nPlaylistCurPos;
         //int		m_nPlaylistLength;
-        //int		m_nTrackPlaying;
-        //int		m_nSongPosMS;
         //int		m_nSongLenMS;
-        bool		m_bUserPagedUp;
-        bool		m_bUserPagedDown;
-        float		m_fMotionVectorsTempDx;
+		float		m_fMotionVectorsTempDx;
         float		m_fMotionVectorsTempDy;
-
-        td_waitstr  m_waitstring;
-        void		WaitString_NukeSelection();
-        void		WaitString_Cut();
-        void		WaitString_Copy();
-        void		WaitString_Paste();
-        void		WaitString_SeekLeftWord();
-        void		WaitString_SeekRightWord();
-        int			WaitString_GetCursorColumn();
-        int			WaitString_GetLineLength();
-        void		WaitString_SeekUpOneLine();
-        void		WaitString_SeekDownOneLine();
 
         int			m_nPresets;			// the # of entries in the file listing.  Includes directories and then files, sorted alphabetically.
         int			m_nDirs;			// the # of presets that are actually directories.  Always between 0 and m_nPresets.
@@ -460,7 +433,7 @@ public:
         PresetList  m_presets;
 	    void		UpdatePresetList(bool bBackground=false, bool bForce=false, bool bTryReselectCurrentPreset=true);
         wchar_t     m_szUpdatePresetMask[MAX_PATH];
-        bool        m_bPresetListReady;
+        volatile bool        m_bPresetListReady;
 	    //void		UpdatePresetRatings();
         //int         m_nRatingReadProgress;  // equals 'm_nPresets' if all ratings are read in & ready to go; -1 if uninitialized; otherwise, it's still reading them in, and range is: [0 .. m_nPresets-1]
         bool        m_bInitialPresetSelected;
@@ -557,8 +530,6 @@ public:
         MYVERTEX    m_comp_verts[FCGSX*FCGSY];
         int         m_comp_indices[(FCGSX-2)*(FCGSY-2)*2*3];
 
-        bool		m_bMMX;
-        //bool		m_bSSE;
         bool        m_bHasFocus;
         bool        m_bHadFocus;
         bool		m_bOrigScrollLockState;
@@ -622,7 +593,6 @@ public:
 	    bool		ReversePropagatePoint(float fx, float fy, float *fx2, float *fy2);
 	    int 		HandleRegularKey(WPARAM wParam);
 	    bool		OnResizeGraphicsWindow();
-	    bool		OnResizeTextWindow();
 	    //bool		InitFont();
 	    //void		ToggleControlWindow();	// for Desktop Mode only
 	    //void		DrawUI();

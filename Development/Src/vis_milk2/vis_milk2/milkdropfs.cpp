@@ -27,12 +27,8 @@ IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISI
 OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-//#include "api.h"
 #include "plugin.h"
-//#include "resource.h"
 #include "support.h"
-//#include "evallib\eval.h"		// for math. expr. eval - thanks Francis! (in SourceOffSite, it's the 'vis_avs\evallib' project.)
-//#include "evallib\compiler.h"
 #include "../ns-eel2/ns-eel.h"
 #include "utility.h"
 #include <assert.h>
@@ -42,16 +38,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define FRAND ((warand() % 7381)/7380.0f)
 
 #define VERT_CLIP 0.75f		// warning: top/bottom can get clipped if you go < 0.65!
-
-int g_title_font_sizes[] =  
-{ 
-    // NOTE: DO NOT EXCEED 64 FONTS HERE.
-	6,  8,  10, 12, 14, 16,      
-	20, 26, 32, 38, 44, 50, 56,
-	64, 72, 80, 88, 96, 104, 112, 120, 128, 136, 144, 
-	160, 192, 224, 256, 288, 320, 352, 384, 416, 448, 
-	480, 512	/**/
-};	
 
 // This function evaluates whether the floating-point
 // control Word is set to single precision/round to nearest/
@@ -155,52 +141,6 @@ int GetNumToSpawn(float fTime, float fDeltaT, float fRate, float fRegularity, in
 
 	// round to nearest integer for result
     return (int)(fNumToSpawn + 0.49f);
-}
-
-bool CPlugin::OnResizeTextWindow()
-{
-	/*
-    if (!m_hTextWnd)
-		return false;
-
-	RECT rect;
-	GetClientRect(m_hTextWnd, &rect);
-
-	if (rect.right - rect.left != m_nTextWndWidth ||
-		rect.bottom - rect.top != m_nTextWndHeight)
-	{
-		m_nTextWndWidth = rect.right - rect.left;
-		m_nTextWndHeight = rect.bottom - rect.top;
-
-		// first, resize fonts if necessary
-		//if (!InitFont())
-			//return false;
-
-		// then resize the memory bitmap used for double buffering
-		if (m_memDC)
-		{
-			SelectObject(m_memDC, m_oldBM);	// delete our doublebuffer
-			DeleteObject(m_memDC);
-			DeleteObject(m_memBM);	
-			m_memDC = NULL;
-			m_memBM = NULL;
-			m_oldBM = NULL;
-		}
-		
-		HDC hdc = GetDC(m_hTextWnd);
-		if (!hdc) return false;
-
-		m_memDC = CreateCompatibleDC(hdc);
-		m_memBM = CreateCompatibleBitmap(hdc, rect.right - rect.left, rect.bottom - rect.top);
-		m_oldBM = (HBITMAP)SelectObject(m_memDC,m_memBM);
-		
-		ReleaseDC(m_hTextWnd, hdc);
-
-		// save new window pos
-		WriteRealtimeConfig();
-	}*/
-
-	return true;
 }
 
 void CPlugin::LoadPerFrameEvallibVars(CState* pState)

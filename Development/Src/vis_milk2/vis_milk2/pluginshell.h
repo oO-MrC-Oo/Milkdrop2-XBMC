@@ -208,35 +208,6 @@ public:
     HMENU               m_main_menu;
     HMENU               m_context_menu;
 
-    // PRIVATE - DESKTOP MODE STUFF
-    //typedef std::list<icon_t> IconList;
-/*    typedef Vector<icon_t> IconList;
-    IconList        m_icon_list;
-    IDirect3DTexture9*  m_desktop_icons_texture[MAX_ICON_TEXTURES];
-    HWND                m_hWndProgMan;
-    HWND                m_hWndDesktop;
-    HWND                m_hWndDesktopListView;
-    char                m_szDesktopFolder[MAX_PATH];   // *without* the final backslash
-    int                 m_desktop_icon_size;
-    int                 m_desktop_dragging;  // '1' when user is dragging icons around
-    int                 m_desktop_box;       // '1' when user is drawing a box
-    BYTE                m_desktop_drag_pidl[1024]; // cast this to ITEMIDLIST
-    POINT               m_desktop_drag_startpos; // applies to dragging or box-drawing
-    POINT               m_desktop_drag_curpos;   // applies to dragging or box-drawing
-    int                 m_desktop_wc_registered;
-    DWORD               m_desktop_bk_color;
-    DWORD               m_desktop_text_color;
-    DWORD               m_desktop_sel_color;
-    DWORD               m_desktop_sel_text_color;
-    int                 m_desktop_icon_state;   // 0=uninit, 1=total refresh in progress, 2=ready, 3=update in progress
-    int                 m_desktop_icon_count;
-    int                 m_desktop_icon_update_frame;
-    CRITICAL_SECTION    m_desktop_cs;
-    int                 m_desktop_icons_disabled;
-    int                 m_vms_desktop_loaded;
-    int                 m_desktop_hook_set;
-    bool                m_bClearVJWindow;
-	*/
     // PRIVATE - MORE TIMEKEEPING
    protected:
     double m_last_raw_time;
@@ -280,29 +251,21 @@ public:
     static INT_PTR CALLBACK DualheadDialogProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam);
 
 private:
-    void PushWindowToJustBeforeDesktop(HWND h);
     void DrawAndDisplay(int redraw);
     void ReadConfig();
-    void WriteConfig();
     void DoTime();
     void AnalyzeNewSound(unsigned char *pWaveL, unsigned char *pWaveR);
     void AlignWaves();
     int  InitDirectX();
     void CleanUpDirectX();
-//    int  InitGDIStuff();
-//    void CleanUpGDIStuff();
     int  AllocateDX9Stuff();
     void CleanUpDX9Stuff(int final_cleanup);
     int  InitNondx9Stuff();
     void CleanUpNondx9Stuff();
-//    int  InitVJStuff(RECT* pClientRect=NULL);
-//    void CleanUpVJStuff();
     int  AllocateFonts(IDirect3DDevice9 *pDevice);
     void CleanUpFonts();
     void AllocateTextSurface();
     void ToggleDesktop();
-    void OnUserResizeWindow();
-    //void OnUserResizeTextWindow();
     void PrepareFor2DDrawing_B(IDirect3DDevice9 *pDevice, int w, int h);
     void RenderBuiltInTextMsgs();
     int  GetCanvasMarginX();     // returns the # of pixels that exist on the canvas, on each side, that the user will never see.  Mainly here for windowed mode, where sometimes, up to 15 pixels get cropped at edges of the screen.

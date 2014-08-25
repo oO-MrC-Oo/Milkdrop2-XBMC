@@ -174,7 +174,7 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine
 	AdjustWindowRect( &rc, WS_OVERLAPPEDWINDOW, false );
 
 	// Create the render window
-	HWND hWnd = CreateWindow( "Direct3DWindowClass", "Vortex", WS_OVERLAPPEDWINDOW,
+	HWND hWnd = CreateWindow( "Direct3DWindowClass", "MD2", WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT, CW_USEDEFAULT, ( rc.right - rc.left ), ( rc.bottom - rc.top ), 0,
 		NULL, hInstance, 0 );
 	if( hWnd == NULL )

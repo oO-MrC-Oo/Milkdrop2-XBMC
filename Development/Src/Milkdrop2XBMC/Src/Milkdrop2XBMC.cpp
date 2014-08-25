@@ -6,14 +6,12 @@
 
 #define TARGET_WINDOWS
 #include "addons/include/xbmc_vis_dll.h"
-//#include "xbmc_addon_cpp_dll.h"
-
 
 CPlugin g_plugin;
 bool IsInitialized = false;
 
-// settings vector
-//StructSetting** g_structSettings;
+int	GNumPresets = 0;
+char** GAllPresetStrings = NULL;
 
 extern "C" ADDON_STATUS ADDON_Create(void* hdl, void* props)
 {
@@ -40,6 +38,15 @@ extern "C" void ADDON_Stop()
 	if( IsInitialized )
 	{
 		g_plugin.PluginQuit();
+	
+		for( int i = 0;  i < GNumPresets; i++ )
+		{
+			delete[] GAllPresetStrings[ i ];
+		}
+
+		delete[] GAllPresetStrings;
+		GAllPresetStrings = NULL;
+
 		IsInitialized = false;
 	}
 }
@@ -73,47 +80,53 @@ extern "C" void GetInfo(VIS_INFO* pInfo)
 	pInfo->iSyncDelay = 0;
 }
 
-extern "C"   bool OnAction(long action, const void *param)
+extern "C" bool OnAction(long action, const void *param)
 {
-/*
-	bool handled = true;
+	bool bHandled = false;
+
 	if( action == VIS_ACTION_UPDATE_TRACK )
 	{
-		VisTrack* visTrack = (VisTrack*) param;
-		g_Vortex->UpdateTrack( visTrack );
 	}
 	else if( action == VIS_ACTION_UPDATE_ALBUMART )
 	{
-		g_Vortex->UpdateAlbumArt( ( char* ) param );
 	}
 	else if (action == VIS_ACTION_NEXT_PRESET)
 	{
-		g_Vortex->LoadNextPreset();
+		g_plugin.NextPreset(1.0f);
+		bHandled = true;
 	}
 	else if (action == VIS_ACTION_PREV_PRESET)
 	{
-		g_Vortex->LoadPreviousPreset();
 	}
 	else if (action == VIS_ACTION_LOAD_PRESET && param)
 	{
-		g_Vortex->LoadPreset( (*(int *)param) );
+		g_plugin.m_nCurrentPreset = (*(int *)param) + g_plugin.m_nDirs;
+
+		wchar_t szFile[MAX_PATH] = {0};
+		lstrcpyW(szFile, g_plugin.m_szPresetDir);	// note: m_szPresetDir always ends with '\'
+		lstrcatW(szFile, g_plugin.m_presets[g_plugin.m_nCurrentPreset].szFilename.c_str());
+
+		g_plugin.LoadPreset(szFile, 1.0f);
+		bHandled = true;
 	}
 	else if (action == VIS_ACTION_LOCK_PRESET)
 	{
-		g_Vortex->GetUserSettings().PresetLocked = !g_Vortex->GetUserSettings().PresetLocked;
 	}
 	else if (action == VIS_ACTION_RANDOM_PRESET)
 	{
-		g_Vortex->LoadRandomPreset();
-	}
-	else
-	{
-		handled = false;
+		g_plugin.LoadRandomPreset(1.0f);
+		bHandled = true;
 	}
 
-	return handled;
-	*/
-	return false;
+	return bHandled;
+}
+
+char* WideToUTF8( const wchar_t* WFilename )
+{
+	int SizeNeeded = WideCharToMultiByte(CP_UTF8, 0, &WFilename[0], -1, NULL, 0, NULL, NULL);
+	char* utf8Name = new char[ SizeNeeded ];
+	WideCharToMultiByte(CP_UTF8, 0, &WFilename[0], -1, &utf8Name[0], SizeNeeded, NULL, NULL);
+	return utf8Name;
 }
 
 //-- GetPresets ---------------------------------------------------------------
@@ -121,22 +134,52 @@ extern "C"   bool OnAction(long action, const void *param)
 //-----------------------------------------------------------------------------
 extern "C" unsigned int GetPresets(char ***presets)
 {
-	if( !presets || !IsInitialized || !g_plugin.m_bPresetListReady )
+	if( !presets || !IsInitialized )
 	{
 		return 0;
 	}
 
-	int NumPresets = g_plugin.m_nPresets;
-//	*presets = g_plugin.m_presets;//m_pPresetAddr;
-//	return g_plugin->m_nPresets;
-	return 0;
+	while( !g_plugin.m_bPresetListReady )
+	{
+
 	}
+
+	if( GAllPresetStrings )
+	{
+		for( int i = 0;  i < GNumPresets; i++ )
+		{
+			delete[] GAllPresetStrings[ i ];
+		}
+
+		delete[] GAllPresetStrings;
+	}
+
+
+	GNumPresets = g_plugin.m_nPresets - g_plugin.m_nDirs;
+
+	GAllPresetStrings = new char*[ GNumPresets ];
+
+	for( int i = 0;  i < GNumPresets; i++ )
+	{
+		PresetInfo& Info = g_plugin.m_presets[ i + g_plugin.m_nDirs ];
+		GAllPresetStrings[ i ] = WideToUTF8( Info.szFilename.c_str() );
+	}
+
+	*presets = GAllPresetStrings;
+	return GNumPresets;
+}
 
 //-- GetPreset ----------------------------------------------------------------
 // Return the index of the current playing preset
 //-----------------------------------------------------------------------------
 extern "C" unsigned GetPreset()
 {
+	if( IsInitialized )
+	{
+		int CurrentPreset = g_plugin.m_nCurrentPreset;
+		CurrentPreset -= g_plugin.m_nDirs;
+		return CurrentPreset;
+	}
 	return 0;
 }
 
@@ -163,7 +206,7 @@ extern "C" void ADDON_Destroy()
 //-----------------------------------------------------------------------------
 extern "C" bool ADDON_HasSettings()
 {
-	return true;
+	return false;
 }
 
 //-- GetStatus ---------------------------------------------------------------
@@ -188,79 +231,9 @@ extern "C" void ADDON_FreeSettings()
 extern "C" ADDON_STATUS ADDON_SetSetting(const char* id, const void* value)
 {
 	/*
-	if ( !id || !value || g_Vortex == NULL )
+	if ( !id || !value || IsInitialized == NULL )
 		return ADDON_STATUS_UNKNOWN;
-
-	// Set the settings got from XBMC
-	UserSettings& userSettings = g_Vortex->GetUserSettings();
-
-	if (strcmp(id, "###GetSavedSettings") == 0) // We have some settings to be saved in the settings.xml file
-	{
-//		if (strcmp((char*)value, "0") == 0)
-//		{
-//			strcpy((char*)id, "lastpresetfolder");
-//			strcpy((char*)value, g_plugin->m_szPresetDir);
-//		}
-//		if (strcmp((char*)value, "1") == 0)
-//		{
-//			strcpy((char*)id, "lastlockedstatus");
-//			strcpy((char*)value, (g_plugin->m_bHoldPreset ? "true" : "false"));
-//		}
-//		if (strcmp((char*)value, "2") == 0)
-//		{
-//			strcpy((char*)id, "lastpresetidx");
-//			sprintf ((char*)value, "%i", g_plugin->m_nCurrentPreset);
-//		}
-//		if (strcmp((char*)value, "3") == 0)
-//		{
-//			strcpy((char*)id, "###End");
-//		}
-		return ADDON_STATUS_OK;
-	}
-
-	if (strcmpi(id, "Use Preset") == 0)
-	{
-		OnAction(34, &value);
-	}
-	else if (strcmpi(id, "RandomPresets") == 0)
-	{
-		userSettings.RandomPresetsEnabled = *(bool*)value == 1;
-	}
-	else if (strcmpi(id, "TimeBetweenPresets") == 0)
-	{
-		userSettings.TimeBetweenPresets = (float)(*(int*)value * 5 + 5);
-	}
-	else if (strcmpi(id, "AdditionalRandomTime") == 0)
-	{
-		userSettings.TimeBetweenPresetsRand = (float)(*(int*)value * 5 ); 
-	}
-	else if (strcmpi(id, "EnableTransitions") == 0)
-	{
-		userSettings.TransitionsEnabled = *(bool*)value == 1;
-	}
-	else if (strcmpi(id, "StopFirstPreset") == 0)
-	{
-		userSettings.StopFirstPreset = *(bool*)value == 1;
-	}
-	else if (strcmpi(id, "EnableAnnouncements") == 0)
-	{
-		userSettings.EnableAnnouncements = *(bool*)value == 1;
-	}
-	else if (strcmpi(id, "ShowFPS") == 0)
-	{
-		userSettings.ShowFPS = *(bool*)value == 1;
-	}
-	else if (strcmpi(id, "ShowDebugConsole") == 0)
-	{
-		userSettings.ShowDebugConsole = *(bool*)value == 1;
-	}
-	else if (strcmpi(id, "ShowAudioAnalysis") == 0)
-	{
-		userSettings.ShowAudioAnalysis = *(bool*)value == 1;
-	}
- 	else
- 		return ADDON_STATUS_UNKNOWN;
-		*/
+	*/
 	return ADDON_STATUS_OK;
 }
 
